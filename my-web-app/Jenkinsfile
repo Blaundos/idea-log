@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        PATH = "/usr/local/sdkman/candidates/maven/current/bin:${env.PATH}"
+    }
     tools {
         maven 'Maven 3.9.7'  // Ensure the name matches what you configured in Jenkins
     }
