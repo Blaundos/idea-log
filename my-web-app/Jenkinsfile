@@ -1,68 +1,43 @@
 pipeline {
     agent any
-
     tools {
-        maven 'Maven 3.9.7' // Use the name you configured in Jenkins
+        maven 'Maven 3.9.7'  // Ensure the name matches what you configured in Jenkins
     }
-
     environment {
-        PATH = "${tool 'Maven 3.9.7'}/bin:$PATH" // Best practice to get Maven path dynamically
+        PATH = "${tool 'Maven 3.9.7'}/bin:${env.PATH}" // Best practice to get Maven path dynamically
     }
-
     stages {
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Blaundos/sample-project.git']]])
+                git 'https://github.com/Blaundos/sample-project.git'
             }
         }
-
         stage('Compile') {
             steps {
-                sh 'mvn clean compile' // Clean before compiling is a good practice
+                sh 'mvn compile'
             }
         }
-
         stage('Code Review') {
             steps {
                 sh 'mvn checkstyle:check'
             }
         }
-
         stage('Unit Test') {
             steps {
                 sh 'mvn test'
             }
         }
-
         stage('Package') {
             steps {
                 sh 'mvn package'
             }
         }
-
         stage('Deploy to Local Tomcat') {
             steps {
-                script {
-                    def tomcatHome = "${env.HOME}/tomcat"  // Make Tomcat path configurable
-                    if (!fileExists(tomcatHome)) {
-                        error("Tomcat not found at ${tomcatHome}")
-                    } else {
-                        sh "cp target/my-web-app.war ${tomcatHome}/webapps/"
-                    }
-                }
+                sh '''
+                cp target/my-web-app.war ~/tomcat/webapps/
+                '''
             }
-        }
-    }
-
-    post {
-        always {
-            junit 'target/surefire-reports/*.xml' // Publish JUnit test results
-        }
-        success {
-            echo 'Build successful!'
-        }
-        failure {
-            echo 'Build failed!'
         }
     }
 }
