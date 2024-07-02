@@ -1,17 +1,12 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven 3.9.7' // Make sure this is your Maven version
+        maven 'Maven 3.9.7'
     }
     environment {
-        PATH = "/usr/local/sdkman/candidates/maven/current/bin:${env.PATH}" // Adjust if needed
+        PATH = "/usr/local/sdkman/candidates/maven/current/bin:${env.PATH}"
     }
     stages {
-        stage('Clean Workspace') {
-            steps {
-                sh 'mvn clean'
-            }
-        }
         stage('Checkout') {
             steps {
                 git 'https://github.com/Blaundos/sample-project.git'
@@ -22,9 +17,9 @@ pipeline {
                 sh 'mvn compile'
             }
         }
-        stage('Code Review') { 
+        stage('Code Review') {
             steps {
-                sh 'mvn checkstyle:check'  // Adjust if using a different code analysis tool
+                sh 'mvn checkstyle:check'
             }
         }
         stage('Unit Test') {
@@ -34,19 +29,14 @@ pipeline {
         }
         stage('Package') {
             steps {
-                sh 'mvn -X package' // Enable debug logging
-                echo "WAR file name: $(ls target/*.war)" 
+                sh 'mvn package'
             }
         }
         stage('Deploy to Local Tomcat') {
             steps {
-                script {
-                    def warFileName = sh(script: 'ls target/*.war', returnStdout: true).trim()
-                    echo "WAR file name: ${warFileName}"
-                    def tomcatWebapps = sh(script: 'echo $CATALINA_HOME/webapps/', returnStdout: true).trim() 
-                    echo "Tomcat webapps directory: ${tomcatWebapps}"
-                    sh "cp target/${warFileName} ${tomcatWebapps}"
-                }
+                sh '''
+                cp target/my-web-app.war ~/tomcat/webapps/
+                '''
             }
         }
     }
