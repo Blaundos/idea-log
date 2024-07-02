@@ -1,7 +1,10 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven 3.8.1'  // Ensure the name matches what you configured in Jenkins
+        maven 'Maven 3.9.7'  // Ensure the name matches what you configured in Jenkins
+    }
+    environment {
+        PATH = "/usr/local/sdkman/candidates/maven/current/bin:${env.PATH}"
     }
     stages {
         stage('Checkout') {
@@ -29,6 +32,12 @@ pipeline {
                 sh 'mvn package'
             }
         }
-        // Add any additional stages like deployment here
+        stage('Deploy to Local Tomcat') {
+            steps {
+                sh '''
+                cp target/my-web-app.war ~/tomcat/webapps/
+                '''
+            }
+        }
     }
 }
